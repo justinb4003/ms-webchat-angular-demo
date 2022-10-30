@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Activity } from 'botframework-directlinejs';
 import type { UserData } from './shared/models/UserData.model';
+import { FormControl } from '@angular/forms';
 
 
 declare global {
@@ -30,6 +31,10 @@ export class AppComponent implements AfterViewInit {
 
   public directLine: any;
 
+  public fcPersonName: FormControl = new FormControl('');
+
+  public fcAddress: FormControl = new FormControl('');
+
   @ViewChild('speechWorkaround')
   public speechWorkaround: ElementRef | undefined;
 
@@ -41,11 +46,6 @@ export class AppComponent implements AfterViewInit {
   public ngAfterViewInit(): void {
     this.createChatbotControl();
   }
-
-  get personName(): string {
-    return this.currentUserData.personName;
-  }
-
 
   public createChatbotControl(): void {
     // https://www.npmjs.com/package/offline-directline
@@ -85,7 +85,6 @@ export class AppComponent implements AfterViewInit {
   }
 
   public processIncomingData(activity: Activity): void {
-    const self = this;
     if (activity.type === 'event' && activity.name === 'dataUpdate') {
       /*
       console.log('chatbot: incoming data received');
@@ -93,7 +92,12 @@ export class AppComponent implements AfterViewInit {
       */
 
       this.currentUserData = JSON.parse(activity.value) as UserData;
-      console.log(this.currentUserData.personName);
+      if (this.currentUserData.personName) {
+        this.fcPersonName.setValue(this.currentUserData.personName);
+      }
+      if (this.currentUserData.address) {
+        this.fcAddress.setValue(this.currentUserData.address);
+      }
     }
   }
 

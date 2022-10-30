@@ -1,7 +1,22 @@
-<h1>Hello {{ this.personName }}</h1>
-<div>
-  <div #botWindow aria-hidden="true" tabindex="0"></div>
-  <div #speechWorkaround aria-live="assertive" class="sr-only"></div>
+<div class="flex-container">
+  <div class="flex-row">
+    <div class="flex-me">
+      <div #botWindow aria-hidden="true" tabindex="0"></div>
+      <div #speechWorkaround aria-live="assertive" class="sr-only"></div>
+    </div>
+    <div class="flex-col">
+      <form class="example-form">
+        <mat-form-field appearance="fill">
+          <mat-label>Full Name</mat-label>
+          <input matInput [formControl]="fcPersonName">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Address</mat-label>
+          <input matInput [formControl]="fcAddress">
+        </mat-form-field>
+      </form>
+    </div>
+  </div>
 </div>
 
 
