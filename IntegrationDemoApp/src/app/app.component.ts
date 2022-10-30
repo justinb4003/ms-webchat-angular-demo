@@ -1,16 +1,12 @@
 import {
   Component,
-  OnInit,
   AfterViewInit,
   ViewChild,
   ElementRef,
-  Output,
-  EventEmitter,
 } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Activity } from 'botframework-directlinejs';
 import type { UserData } from './shared/models/UserData.model';
-import { FormControl } from '@angular/forms';
-
 
 declare global {
   interface Window {
@@ -48,8 +44,15 @@ export class AppComponent implements AfterViewInit {
   }
 
   public createChatbotControl(): void {
-    // https://www.npmjs.com/package/offline-directline
-    // directline -d 3000 -b http://127.0.0.1:3978/api/messages
+    /* To connect this to your local but you need to install the following package:
+     * https://www.npmjs.com/package/offline-directline
+     * After that run the following coammnd on a terminal:
+     * directline -d 3000 -b http://127.0.0.1:3978/api/messages
+     */
+
+    /* Configure the bot webchat control to look at our local
+     * offfline-directline pipe we created above
+     */
     const dlOptions = {
       domain: 'http://localhost:3000/directline',
       webSocket: false,
@@ -58,7 +61,6 @@ export class AppComponent implements AfterViewInit {
     this.directLine = window.WebChat.createDirectLine(dlOptions);
 
     // Full list of botStyle options here: https://github.com/Microsoft/BotFramework-WebChat/blob/master/packages/component/src/Styles/defaultStyleOptions.js
-    //  background-color: #4A59CC;
     const botStyle = {
       rootHeight: '75vh',
       rootWidth: '270px',
@@ -85,13 +87,13 @@ export class AppComponent implements AfterViewInit {
   }
 
   public processIncomingData(activity: Activity): void {
+    // Check if the data came from our SendUserData method
     if (activity.type === 'event' && activity.name === 'dataUpdate') {
-      /*
-      console.log('chatbot: incoming data received');
-      console.log(JSON.stringify(activity, null, 4));
-      */
-
       this.currentUserData = JSON.parse(activity.value) as UserData;
+      /*
+       * If the bot sent over data then we set the corresponding control
+       * to that value.
+       */
       if (this.currentUserData.personName) {
         this.fcPersonName.setValue(this.currentUserData.personName);
       }
@@ -100,7 +102,6 @@ export class AppComponent implements AfterViewInit {
       }
     }
   }
-
 }
 
 export default AppComponent;
