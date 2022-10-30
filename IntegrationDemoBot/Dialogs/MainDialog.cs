@@ -31,9 +31,11 @@ namespace CoreBot.Dialogs
             AddDialog(new TextPrompt(nameof(TextPrompt)));
             var waterfallSteps = new WaterfallStep[]
             {
-                IntroStepAsync,
-                ActStepAsync,
-                FinalStepAsync,
+                PromptNameAsync,
+                HandleNameAsync,
+                PromptAddressAsync,
+                HandleAddressAsync,
+                ResetDialogAsync,
             };
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), waterfallSteps));
@@ -63,7 +65,7 @@ namespace CoreBot.Dialogs
 
         }
 
-        private async Task<DialogTurnResult> IntroStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> PromptNameAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // Use the text provided in FinalStepAsync or the default if it is the first time.
             var messageText = stepContext.Options?.ToString() ?? "What is your name?";
@@ -71,12 +73,11 @@ namespace CoreBot.Dialogs
             return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
         }
 
-        private async Task<DialogTurnResult> ActStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> HandleNameAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var fullName = stepContext.Result.ToString();
             var p = new UserData
             {
-                PersonId = Guid.Parse(stepContext.Context.Activity.From.Id),
                 PersonName = fullName
             };
             await SendUserData(stepContext.Context, cancellationToken, p);
@@ -85,11 +86,34 @@ namespace CoreBot.Dialogs
             await stepContext.Context.SendActivityAsync(greetMessaage, cancellationToken);
             return await stepContext.NextAsync(null, cancellationToken);
         }
+        
+        private async Task<DialogTurnResult> PromptAddressAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            // Use the text provided in FinalStepAsync or the default if it is the first time.
+            var messageText = stepContext.Options?.ToString() ?? "What is your address?";
+            var promptMessage = MessageFactory.Text(messageText, messageText, InputHints.ExpectingInput);
+            return await stepContext.PromptAsync(nameof(TextPrompt), new PromptOptions { Prompt = promptMessage }, cancellationToken);
+        }
 
-        private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> HandleAddressAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            var res = stepContext.Result.ToString();
+            var p = new UserData
+            {
+                Address = res
+            };
+            await SendUserData(stepContext.Context, cancellationToken, p);
+            var message = $"Thank you. I will record that in your file.";
+            var greetMessaage = MessageFactory.Text(message, message, InputHints.IgnoringInput);
+            await stepContext.Context.SendActivityAsync(greetMessaage, cancellationToken);
+            return await stepContext.NextAsync(null, cancellationToken);
+        }
+
+        private async Task<DialogTurnResult> ResetDialogAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             // Restart the main dialog with a different message the second time around
-            var promptMessage = "What else can I do for you?";
+            // Or just quit here?
+            var promptMessage = "If I got your name wrong let me know and we can try again.";
             return await stepContext.ReplaceDialogAsync(InitialDialogId, promptMessage, cancellationToken);
         }
     }
